@@ -28,25 +28,25 @@ func postCommitFilepath(base string) string {
 	return filepath.Join(base, hooksPath(), "post-commit")
 }
 
-func preCommitContent() []byte {
-	return []byte(`#!/bin/bash
+func preCommitContent(baseCommand string) []byte {
+	return []byte(fmt.Sprintf(`#!/bin/bash
 
 set -o xtrace
 
-aduu gogit replace .
-git add go.mod`)
+%s replace .
+git add go.mod`, baseCommand))
 }
 
-func postCommitContent() []byte {
-	return []byte(`#!/bin/bash
+func postCommitContent(baseCommand string) []byte {
+	return []byte(fmt.Sprintf(`#!/bin/bash
 
 set -o xtrace
 
-aduu gogit replace --undo .`)
+%s replace --undo .`, baseCommand))
 }
 
 // InstallHooks installs pre-commit hooks which do remove local replace directives temporarily during a commit.
-func InstallHooks(base string) (err error) {
+func InstallHooks(base string, baseCommand string) (err error) {
 	hooksFolder := filepath.Join(base, hooksPath())
 
 	exists, err := helper.DoesPathExistErr(hooksFolder)
@@ -76,11 +76,11 @@ func InstallHooks(base string) (err error) {
 		return errPostCommitDoesExistAlreaxy
 	}
 
-	if err = ioutil.WriteFile(preCommitFilepath(base), preCommitContent(), 0755); err != nil {
+	if err = ioutil.WriteFile(preCommitFilepath(base), preCommitContent(baseCommand), 0755); err != nil {
 		return
 	}
 
-	if err = ioutil.WriteFile(postCommitFilepath(base), postCommitContent(), 0755); err != nil {
+	if err = ioutil.WriteFile(postCommitFilepath(base), postCommitContent(baseCommand), 0755); err != nil {
 		return
 	}
 
