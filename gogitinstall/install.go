@@ -31,16 +31,12 @@ func postCommitFilepath(base string) string {
 func preCommitContent(baseCommand string) []byte {
 	return []byte(fmt.Sprintf(`#!/bin/bash
 
-set -o xtrace
-
 %s replace .
 git add go.mod`, baseCommand))
 }
 
 func postCommitContent(baseCommand string) []byte {
 	return []byte(fmt.Sprintf(`#!/bin/bash
-
-set -o xtrace
 
 %s replace --undo .`, baseCommand))
 }
