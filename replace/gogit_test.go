@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/mod/modfile"
 	"golang.org/x/mod/module"
@@ -17,6 +18,19 @@ type testdata struct {
 	input []byte
 	want1 []byte
 	want2 []byte
+}
+
+func fileHasContent(t *testing.T, file string, want string, msg string) {
+	got, err := ioutil.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(msg) != 0 {
+		msg = "msg=" + msg
+	}
+
+	assert.Equalf(t, want, string(got), "file %#v should have the given content"+msg, file)
 }
 
 func readTestData(t *testing.T, base string) *testdata {
@@ -34,6 +48,23 @@ func readTestData(t *testing.T, base string) *testdata {
 		input: input,
 		want1: want1,
 		want2: want2,
+	}
+}
+
+func initializeRepoAndStageGomod(t *testing.T, base string) {
+	r, err := git.PlainInit(base, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w, err := r.Worktree()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = w.Add(filepath.Join(base, "go.mod"))
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -56,37 +87,96 @@ func (test *testdata) runTest(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = RemoveLocalReplacesFromGomod(path); err != nil {
+	if err = RemoveLocalReplacesFromGomod(path, false); err != nil {
 		t.Fatal(err)
 	}
 
-	if !assert.FileExists(t, backup, "backup file was not created") {
-		return
+	fileHasContent(t, backup, string(test.input), "backup should have worked correctly")
+	fileHasContent(t, goModFilepath, string(test.want1), "failed to remove local replace statements")
+
+	if err = UndoRemovingLocalReplacesFromGomod(path, false); err != nil {
+		t.Fatal(err)
 	}
 
-	// Check the correct go.mod was written.
-	got1, err := ioutil.ReadFile(goModFilepath)
+	fileHasContent(t, goModFilepath, string(test.want2), "failed to undo the local changes")
+
+	if !assert.NoFileExists(t, backup, "backup was not removed") {
+		return
+	}
+}
+
+func (test *testdata) runTestWithStagingOnlyTrueAndGomodStaged(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "e2e-test")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !assert.Equal(t, string(test.want1), string(got1), "failed to remove local replace statements") {
-		return
-	}
+	t.Cleanup(func() {
+		if err = os.RemoveAll(tempDir); err != nil {
+			t.Fatal(err)
+		}
+	})
 
-	if err = UndoRemovingLocalReplacesFromGomod(path); err != nil {
+	base := tempDir
+	goModFilepath := filepath.Join(tempDir, "go.mod")
+	backup := filepath.Join(tempDir, backupFilename())
+	if err = ioutil.WriteFile(goModFilepath, test.input, 0755); err != nil {
 		t.Fatal(err)
 	}
 
-	// Check the correct go.mod was written.
-	got2, err := ioutil.ReadFile(goModFilepath)
+	initializeRepoAndStageGomod(t, base)
+
+	if err = RemoveLocalReplacesFromGomod(base, false); err != nil {
+		t.Fatal(err)
+	}
+
+	// Should work as usual because go.mod is staged.
+	fileHasContent(t, backup, string(test.input), "backup should have worked correctly")
+	fileHasContent(t, goModFilepath, string(test.want1), "failed to remove local replace statements")
+
+	if err = UndoRemovingLocalReplacesFromGomod(base, false); err != nil {
+		t.Fatal(err)
+	}
+
+	fileHasContent(t, goModFilepath, string(test.want2), "failed to undo the local changes")
+
+	if !assert.NoFileExists(t, backup, "backup was not removed") {
+		return
+	}
+}
+
+func (test *testdata) runTestWithStagingOnlyTrueAndGomodUnstaged(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "e2e-test")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !assert.Equal(t, string(test.want2), string(got2), "failed to undo the local changes") {
-		return
+	t.Cleanup(func() {
+		if err = os.RemoveAll(tempDir); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	base := tempDir
+	goModFilepath := filepath.Join(tempDir, "go.mod")
+	backup := filepath.Join(tempDir, backupFilename())
+	if err = ioutil.WriteFile(goModFilepath, test.input, 0755); err != nil {
+		t.Fatal(err)
 	}
+
+	if err = RemoveLocalReplacesFromGomod(base, true); err != nil {
+		t.Fatal(err)
+	}
+
+	// Not expecting any changes because go.mod is not staged.
+	fileHasContent(t, backup, string(test.input), "backup should have worked correctly")
+	fileHasContent(t, goModFilepath, string(test.input), "failed to remove local replace statements")
+
+	if err = UndoRemovingLocalReplacesFromGomod(base, true); err != nil {
+		t.Fatal(err)
+	}
+
+	fileHasContent(t, goModFilepath, string(test.input), "failed to undo the local changes")
 
 	if !assert.NoFileExists(t, backup, "backup was not removed") {
 		return
@@ -164,7 +254,7 @@ replace aduu.dev/utils => ../aduu-dev-utils`
 		t.Fatal(err)
 	}
 
-	if err = RemoveLocalReplacesFromGomod(path); err == nil {
+	if err = RemoveLocalReplacesFromGomod(path, false); err == nil {
 		t.Fatalf("RemoveLocalReplaces should have returned error when there is no go.mod.b file")
 	}
 }
@@ -212,7 +302,7 @@ replace aduu.dev/utils => ../aduu-dev-utils`
 		t.Fatal(err)
 	}
 
-	if err = RemoveLocalReplacesFromGomod(path); err != nil {
+	if err = RemoveLocalReplacesFromGomod(path, false); err != nil {
 		t.Fatal(err)
 	}
 
@@ -221,7 +311,7 @@ replace aduu.dev/utils => ../aduu-dev-utils`
 		t.Fatal(err)
 	}
 
-	if err = UndoRemovingLocalReplacesFromGomod(path); err == nil {
+	if err = UndoRemovingLocalReplacesFromGomod(path, false); err == nil {
 		t.Fatalf("Undo should return error if there is no go.mod.b backup file")
 	}
 }

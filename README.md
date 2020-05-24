@@ -37,13 +37,13 @@ gogit install-hooks .
 It basically adds to `.git/hooks/pre-commit` 
 
 ```
-gogit replace . && git add go.mod
+gogit replace --replace-only-if-staged .
 ```
 
 and to `.git/hooks/post-commit` it adds
 
 ```
-gogit replace --undo .
+gogit replace --replace-only-if-staged --undo .
 ```
 
 It adds comments to those lines to remember which lines it wrote.

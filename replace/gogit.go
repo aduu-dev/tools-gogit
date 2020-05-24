@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"aduu.dev/utils/helper"
+	"github.com/go-git/go-git/v5"
 	copy2 "github.com/otiai10/copy"
 	"golang.org/x/mod/modfile"
 	"k8s.io/klog/v2"
@@ -88,8 +89,36 @@ func isLocalDirective(rep *modfile.Replace) bool {
 	return strings.HasPrefix(newPath, "..") || strings.HasPrefix(newPath, "./")
 }
 
+// isGomodStaged returns true if go.mod is staged
+func isGomodStaged(base string) (staged bool, err error) {
+	r, err := git.PlainOpen(base)
+	if err != nil {
+		return
+	}
+
+	w, err := r.Worktree()
+	if err != nil {
+		return
+	}
+
+	status, err := w.Status()
+	if err != nil {
+		return
+	}
+
+	gomodStatus := status.File("go.mod")
+
+	switch gomodStatus.Staging {
+	// In these states I assume the intention is to commit the modfied go.mod.
+	case git.Added, git.Copied, git.Modified, git.Renamed, git.UpdatedButUnmerged:
+		return true, nil
+	default:
+		return false, nil
+	}
+}
+
 // RemoveLocalReplacesFromGomod removes go.mod replace directives which are pointing to local folders.
-func RemoveLocalReplacesFromGomod(arg string) (err error) {
+func RemoveLocalReplacesFromGomod(arg string, workOnStagedOnly bool) (err error) {
 	backup := filepath.Join(arg, backupFilename())
 
 	exists, err := helper.DoesPathExistErr(backup)
@@ -102,18 +131,19 @@ func RemoveLocalReplacesFromGomod(arg string) (err error) {
 	}
 
 	gomodFilepath, data, err := getGoModFilepathAndData(arg)
+
 	if err != nil {
 		return
 	}
 
-	// Create backup.
-	klog.InfoS("Creating backup", "from", gomodFilepath, "backup", backup)
-	if err = copy2.Copy(gomodFilepath, backup); err != nil {
-		return fmt.Errorf("failed to create backup at %#v: %w", backup, err)
-	}
-
 	if len(gomodFilepath) == 0 {
 		return fmt.Errorf("goModFilepath is not set")
+	}
+	// Create backup.
+	klog.InfoS("Creating backup", "from", gomodFilepath, "backup", backup)
+
+	if err = copy2.Copy(gomodFilepath, backup); err != nil {
+		return fmt.Errorf("failed to create backup at %#v: %w", backup, err)
 	}
 
 	file, err := modfile.Parse(gomodFilepath, data, nil)
@@ -121,6 +151,34 @@ func RemoveLocalReplacesFromGomod(arg string) (err error) {
 		return fmt.Errorf("failed to parse modfile at %#v: %w", gomodFilepath, err)
 	}
 
+	// If we do not require go.mod to be staged we can start removing the local directives immediately.
+	if !workOnStagedOnly {
+		err = removeLocalDirectivesInFile(file, gomodFilepath)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Find out the staging status of go.mod.
+		isGomodStaged, err := isGomodStaged(arg)
+		if err != nil {
+			return err
+		}
+
+		// If we require go.mod to be staged and go.mod is also staged then remove the replace directives.
+		if isGomodStaged {
+			err = removeLocalDirectivesInFile(file, gomodFilepath)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	klog.InfoS("Finished removing local replace directives", "go.mod", gomodFilepath, "backup", backup)
+
+	return nil
+}
+
+func removeLocalDirectivesInFile(file *modfile.File, gomodFilepath string) (err error) {
 	localReplaces := removeLocalReplaceDirectives(file.Replace)
 
 	// Only write out a modified version in case we actually removed a replace directive.
@@ -129,7 +187,7 @@ func RemoveLocalReplacesFromGomod(arg string) (err error) {
 	if len(localReplaces) > 0 {
 		for _, localReplace := range localReplaces {
 			if err = file.DropReplace(localReplace.Old.Path, localReplace.Old.Version); err != nil {
-				return
+				return err
 			}
 		}
 
@@ -145,13 +203,11 @@ func RemoveLocalReplacesFromGomod(arg string) (err error) {
 		}
 	}
 
-	klog.InfoS("Finished removing local replace directives", "go.mod", gomodFilepath, "backup", backup)
-
 	return nil
 }
 
 // UndoRemovingLocalReplacesFromGomod replaces the local go.mod with the backup.
-func UndoRemovingLocalReplacesFromGomod(arg string) (err error) {
+func UndoRemovingLocalReplacesFromGomod(arg string, workOnStaged bool) (err error) {
 	// Run tests and get go.mod filepath.
 	goModFilepath, _, err := getGoModFilepathAndData(arg)
 	if err != nil {

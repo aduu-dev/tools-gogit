@@ -32,17 +32,17 @@ func postCommitFilepath(base string) string {
 }
 
 func preCommitLine(baseCommand string) string {
-	return fmt.Sprintf(`%s replace . && git add go.mod`, baseCommand)
+	return fmt.Sprintf(`%s replace --replace-only-if-staged .`, baseCommand)
+}
+
+func postCommitLine(baseCommand string) string {
+	return fmt.Sprintf(`%s replace --replace-only-if-staged --undo .`, baseCommand)
 }
 
 func bashFile(line string, comment string) []byte {
 	return []byte(fmt.Sprintf(`#!/bin/bash
 
 %s`, combinedLine(line, comment)))
-}
-
-func postCommitLine(baseCommand string) string {
-	return fmt.Sprintf(`%s replace --undo .`, baseCommand)
 }
 
 // Hooks installs pre-commit hooks which do remove local replace directives temporarily during a commit.

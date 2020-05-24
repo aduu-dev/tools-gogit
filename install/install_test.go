@@ -44,10 +44,10 @@ func TestHooks(t *testing.T) {
 			},
 			wantPreCommitContent: `#!/bin/bash
 
-gogit replace . && git add go.mod # ` + defaultBashComment,
+gogit replace --replace-only-if-staged . # ` + defaultBashComment,
 			wantPostCommitContent: `#!/bin/bash
 
-gogit replace --undo . # ` + defaultBashComment,
+gogit replace --replace-only-if-staged --undo . # ` + defaultBashComment,
 		},
 
 		{
@@ -57,8 +57,8 @@ gogit replace --undo . # ` + defaultBashComment,
 				postCommitContent: pstring(""),
 				baseCommand:       "gogit",
 			},
-			wantPreCommitContent:  `gogit replace . && git add go.mod # ` + defaultBashComment,
-			wantPostCommitContent: `gogit replace --undo . # ` + defaultBashComment,
+			wantPreCommitContent:  `gogit replace --replace-only-if-staged . # ` + defaultBashComment,
+			wantPostCommitContent: `gogit replace --replace-only-if-staged --undo . # ` + defaultBashComment,
 		},
 		{
 			name: "add to existing pre-commit file with no match & non-empty file",
@@ -69,10 +69,10 @@ gogit replace --undo . # ` + defaultBashComment,
 			},
 			wantPreCommitContent: `#!/bin/bash
 
-gogit replace . && git add go.mod # ` + defaultBashComment,
+gogit replace --replace-only-if-staged . # ` + defaultBashComment,
 			wantPostCommitContent: `#!/bin/bash
 
-gogit replace --undo . # ` + defaultBashComment,
+gogit replace --replace-only-if-staged --undo . # ` + defaultBashComment,
 		},
 
 		{
@@ -82,8 +82,8 @@ gogit replace --undo . # ` + defaultBashComment,
 				postCommitContent: pstring("# " + defaultBashComment),
 				baseCommand:       "gogit",
 			},
-			wantPreCommitContent:  `gogit replace . && git add go.mod # ` + defaultBashComment,
-			wantPostCommitContent: `gogit replace --undo . # ` + defaultBashComment,
+			wantPreCommitContent:  `gogit replace --replace-only-if-staged . # ` + defaultBashComment,
+			wantPostCommitContent: `gogit replace --replace-only-if-staged --undo . # ` + defaultBashComment,
 		},
 	}
 
