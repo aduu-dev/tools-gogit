@@ -1,4 +1,8 @@
-# Local development with replace directives
+# gogit
+
+[![API reference](https://img.shields.io/badge/godoc-reference-5272B4)](https://pkg.go.dev/aduu.dev/tools/gogit?tab=overview)
+
+---
 
 Local development often involves local replace directives like
 
@@ -6,15 +10,16 @@ Local development often involves local replace directives like
 replace aduu.dev/utils => ../go/aduu-dev-utils
 ```
 
-But tests fail when they are encountered on different build machines like Github Actions.
-To Avoid this I wrote this small script which can temporarily remove the local replacements, especially during git commits.
+When remote machines (think Github Actions or build machines) encounter local replace directives then tests fail.
+This can be avoided by removing the replace directives temporarily, by hand or with git commit hooks.
 
-This avoids having to think about one last step before a push: removing local replace directives.
+gogit allows installing pre-commit and post-commit hooks and also offers manual commands 
+which can temporarily back up go.mod, remove the replace directives and then later restore the go.mod from the backup.
 
 # Install
 
 ```
-go get aduu.dev/tools/gogit
+go get -u aduu.dev/tools/gogit
 ```
 
 # Examples
@@ -33,7 +38,7 @@ gogit install-hooks .
 It basically adds to `.git/hooks/pre-commit` 
 
 ```
-gogit replace . &&git add go.mod
+gogit replace . && git add go.mod
 ```
 
 and to `.git/hooks/post-commit` it adds
