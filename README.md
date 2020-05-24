@@ -1,7 +1,6 @@
 # gogit
 
-[![API reference](https://img.shields.io/badge/godoc-reference-5272B4)](https://pkg.go.dev/aduu.dev/tools/gogit?tab=overview)
-
+[![API reference](https://img.shields.io/badge/godoc-reference-5272B4)](https://pkg.go.dev/aduu.dev/tools/gogit?tab=overview) ![Test branches](https://github.com/aduu-dev/tools-gogit/workflows/Test%20branches/badge.svg?branch=master)
 ---
 
 Local development often involves local replace directives like
