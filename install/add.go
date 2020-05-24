@@ -11,11 +11,11 @@ func combinedLine(line string, comment string) string {
 }
 
 var (
-	errLineContainsLineSeparators = fmt.Errorf("error: line contains one or more line separators")
+	errLineContainsLineSeparators    = fmt.Errorf("error: line contains one or more line separators")
 	errCommentContainsLineSeparators = fmt.Errorf("error: comment contains line separators")
-	errCommentIsEmpty = fmt.Errorf("error: comment is empty")
-	errTwoCommentsMatch = fmt.Errorf("error: two in-file comments match the given one")
-	errCommentContainsHash = fmt.Errorf("error: comment contains hash")
+	errCommentIsEmpty                = fmt.Errorf("error: comment is empty")
+	errTwoCommentsMatch              = fmt.Errorf("error: two in-file comments match the given one")
+	errCommentContainsHash           = fmt.Errorf("error: comment contains hash")
 )
 
 func commentLineIndexes(lines []string, comment string) (indexes []int, err error) {
@@ -34,7 +34,7 @@ func commentLineIndexes(lines []string, comment string) (indexes []int, err erro
 	return indexe, nil
 }
 
-func fixLineSeparators(lines []string) (out []string){
+func fixLineSeparators(lines []string) (out []string) {
 	// Remove all spaces until only one is between line and a non-empty line.
 	out = make([]string, 0, len(lines))
 	for _, l := range lines {
@@ -75,7 +75,7 @@ done:
 			lines = append(lines, "")
 			tmp := lines[last]
 			lines[last] = ""
-			lines[last + 1] = tmp
+			lines[last+1] = tmp
 
 			break
 		}
@@ -170,5 +170,5 @@ func removeFromShellFile(content string, comment string) (changedContent string,
 		lines = lines[0:i]
 	}
 
-	return strings.Join(lines,"\n"), nil
+	return strings.Join(lines, "\n"), nil
 }

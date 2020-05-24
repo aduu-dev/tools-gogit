@@ -12,14 +12,14 @@ import (
 
 func TestRemove(t *testing.T) {
 	type args struct {
-		preCommit string
+		preCommit  string
 		postCommit string
 	}
 
 	tests := []struct {
-		name string
-		args args
-		wantPreCommit string
+		name           string
+		args           args
+		wantPreCommit  string
 		wantPostCommit string
 	}{
 		{
@@ -34,7 +34,7 @@ func TestRemove(t *testing.T) {
 		{
 			name: "match: remove empty line",
 			args: args{
-				preCommit:  `#!/bin/bash
+				preCommit: `#!/bin/bash
 # ` + defaultBashComment,
 				postCommit: `# ` + defaultBashComment,
 			},
@@ -44,7 +44,7 @@ func TestRemove(t *testing.T) {
 		{
 			name: "match: remove full line",
 			args: args{
-				preCommit:  `#!/bin/bash
+				preCommit: `#!/bin/bash
  hello # ` + defaultBashComment,
 				postCommit: ` hi# ` + defaultBashComment,
 			},
@@ -55,7 +55,7 @@ func TestRemove(t *testing.T) {
 		{
 			name: "match: remove from the end of the file",
 			args: args{
-				preCommit:  `#!/bin/bash
+				preCommit: `#!/bin/bash
 
 
 
@@ -116,7 +116,7 @@ func fileHasContent(t *testing.T, file string, want string, msg string) {
 		msg = "msg=" + msg
 	}
 
-	assert.Equalf(t, want, string(got), "file %#v should have the given content" + msg, file)
+	assert.Equalf(t, want, string(got), "file %#v should have the given content"+msg, file)
 }
 
 func TestRemove_returns_error_if_no_hook_files(t *testing.T) {

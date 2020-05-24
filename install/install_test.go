@@ -14,33 +14,33 @@ func pstring(s string) *string {
 }
 
 // IsFileExecutable determines the executable bits 0111 are set for the given file.
-func IsFileExecutable(file string) (executable bool, err error){
+func IsFileExecutable(file string) (executable bool, err error) {
 	stat, err := os.Stat(file)
 	if err != nil {
 		return
 	}
 
-	return stat.Mode().Perm() & 0100 != 0, nil
+	return stat.Mode().Perm()&0100 != 0, nil
 }
 
 func TestHooks(t *testing.T) {
 	type args struct {
-		preCommitContent        *string
-		postCommitContent        *string
-		baseCommand string
+		preCommitContent  *string
+		postCommitContent *string
+		baseCommand       string
 	}
 	tests := []struct {
-		name    string
-		args    args
-		wantPreCommitContent        string
-		wantPostCommitContent        string
+		name                  string
+		args                  args
+		wantPreCommitContent  string
+		wantPostCommitContent string
 	}{
 		{
 			name: "no hooks exist yet",
 			args: args{
-				preCommitContent: nil,
+				preCommitContent:  nil,
 				postCommitContent: nil,
-				baseCommand: "gogit",
+				baseCommand:       "gogit",
 			},
 			wantPreCommitContent: `#!/bin/bash
 
@@ -53,19 +53,19 @@ gogit replace --undo . # ` + defaultBashComment,
 		{
 			name: "add to existing pre-commit file with no match & empty file",
 			args: args{
-				preCommitContent: pstring(""),
+				preCommitContent:  pstring(""),
 				postCommitContent: pstring(""),
-				baseCommand: "gogit",
+				baseCommand:       "gogit",
 			},
-			wantPreCommitContent: `gogit replace . && git add go.mod # ` + defaultBashComment,
+			wantPreCommitContent:  `gogit replace . && git add go.mod # ` + defaultBashComment,
 			wantPostCommitContent: `gogit replace --undo . # ` + defaultBashComment,
 		},
 		{
 			name: "add to existing pre-commit file with no match & non-empty file",
 			args: args{
-				preCommitContent: pstring("#!/bin/bash"),
+				preCommitContent:  pstring("#!/bin/bash"),
 				postCommitContent: pstring("#!/bin/bash"),
-				baseCommand: "gogit",
+				baseCommand:       "gogit",
 			},
 			wantPreCommitContent: `#!/bin/bash
 
@@ -78,11 +78,11 @@ gogit replace --undo . # ` + defaultBashComment,
 		{
 			name: "add to existing pre-commit file with match",
 			args: args{
-				preCommitContent: pstring("# " +defaultBashComment),
+				preCommitContent:  pstring("# " + defaultBashComment),
 				postCommitContent: pstring("# " + defaultBashComment),
-				baseCommand: "gogit",
+				baseCommand:       "gogit",
 			},
-			wantPreCommitContent: `gogit replace . && git add go.mod # ` + defaultBashComment,
+			wantPreCommitContent:  `gogit replace . && git add go.mod # ` + defaultBashComment,
 			wantPostCommitContent: `gogit replace --undo . # ` + defaultBashComment,
 		},
 	}

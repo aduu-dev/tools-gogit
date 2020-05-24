@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	errHooksFolderDoesNotExist    = fmt.Errorf("hooks folder does not exist")
+	errHooksFolderDoesNotExist = fmt.Errorf("hooks folder does not exist")
 )
 
 const (
@@ -103,7 +103,7 @@ func Hooks(base string, baseCommand string) (err error) {
 	klog.InfoS("Successuflly installed commit hooks",
 		"pre-commit", preCommitFilepath(base),
 		"post-commit", postCommitFilepath(base),
-		)
+	)
 
 	return nil
 }
