@@ -1,5 +1,7 @@
 aduu.dev/utils v0.0.0-20200523170920-7644365bffb9 h1:5xemSvA9w4oH8XdMspJ8Hc9+lMlSDV9Q+Il2kcBWhlo=
 aduu.dev/utils v0.0.0-20200523170920-7644365bffb9/go.mod h1:YwnNDkcrCPVOCDRQ7V7AfZ6wMSYomffm8lz0UaK0u+I=
+aduu.dev/utils v0.1.1 h1:skLFDp5hOnXYUTjV6MXHggF6jIvkLzALJfDE9qLTbc0=
+aduu.dev/utils v0.1.1/go.mod h1:YwnNDkcrCPVOCDRQ7V7AfZ6wMSYomffm8lz0UaK0u+I=
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
