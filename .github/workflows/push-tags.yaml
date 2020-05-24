@@ -1,0 +1,21 @@
+on:
+  push:
+    tags:
+      - v0.*.*
+      - v1.*.*
+name: Test
+jobs:
+  push_tag_to_sumdb:
+    strategy:
+      matrix:
+        go-version: [1.14.x]
+        platform: [ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Get the tag name
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Push new tag to pkg.go.dev
+          uses: wei/curl@master
+          with:
+            args: https://sum.golang.org/lookup/aduu.dev/tools/gogit@${{ steps.get_version.outputs.VERSION }}
