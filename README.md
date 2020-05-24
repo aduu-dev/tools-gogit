@@ -69,7 +69,7 @@ This way you can temporarily remove local replace directives:
 gogit replace .
 ```
 
-A backup is being written into "go.mod.b".
+A backup is being written into `go.mod.b`.
 
 To reapply a backup:
 
