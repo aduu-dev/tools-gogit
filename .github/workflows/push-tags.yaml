@@ -16,6 +16,6 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Push new tag to pkg.go.dev
-          uses: wei/curl@master
-          with:
-            args: https://sum.golang.org/lookup/aduu.dev/tools/gogit@${{ steps.get_version.outputs.VERSION }}
+        uses: wei/curl@master
+        with:
+          args: https://sum.golang.org/lookup/aduu.dev/tools/gogit@${{ steps.get_version.outputs.VERSION }}
