@@ -14,7 +14,7 @@ This avoids having to think about one last step before a push: removing local re
 # Install
 
 ```
-go get aduu.dev/tools/gogit/gogitcmd/gogit
+go get aduu.dev/tools/gogit
 ```
 
 # Examples
@@ -30,26 +30,32 @@ To install the git pre-commit and post-commit hooks:
 gogit install-hooks .
 ```
 
-What is basically being inserted is
-
-
-.git/hooks/pre-commit:
+It basically adds to `.git/hooks/pre-commit` 
 
 ```
-#!/bin/bash
-
-gogit replace .
-git add go.mod
+gogit replace . &&git add go.mod
 ```
 
-.git/hooks/post-commit
-```
-#!/bin/bash
+and to `.git/hooks/post-commit` it adds
 
+```
 gogit replace --undo .
 ```
 
+It adds comments to those lines to remember which lines it wrote.
+So applying `gogit install-hooks .` twice in a row is idempotent (does not add the line twice).
+
 The base command `gogit` can be replaced with a flag for install-hooks: `--base-command=my-command`
+
+## Removing gogit install hooks
+
+The counter-part to `goit install-hooks .`:
+
+```
+gogit remove-hooks .
+```
+
+Note that it does not delete the git hooks, but rather only removes the line with the comment it inserted itself.
 
 ## Manual
 

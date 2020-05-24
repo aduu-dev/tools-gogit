@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"aduu.dev/tools/gogit"
+	"aduu.dev/tools/gogit/replace"
 )
 
 // GogitReplaceCMD replaces the local go.mod with one containing no go.mod files.
@@ -20,10 +20,10 @@ func GogitReplaceCMD() *cobra.Command {
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) (err error) {
 		if *undo {
-			return gogit.UndoRemovingLocalReplacesFromGomod(args[0])
+			return replace.UndoRemovingLocalReplacesFromGomod(args[0])
 		}
 
-		return gogit.RemoveLocalReplacesFromGomod(args[0])
+		return replace.RemoveLocalReplacesFromGomod(args[0])
 	}
 	cmd.SetOut(os.Stdout)
 	cmd.SetErr(os.Stderr)

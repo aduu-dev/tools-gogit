@@ -17,7 +17,8 @@ func CMD() *cobra.Command {
 	}
 	cmd.SetOut(os.Stdout)
 	cmd.SetErr(os.Stderr)
-	cmd.AddCommand(GogitInstallHooksCMD(), GogitReplaceCMD())
+	cmd.AddCommand(GogitInstallHooksCMD(), GogitRemoveHooksCMD())
+	cmd.AddCommand(GogitReplaceCMD())
 
 	return cmd
 }

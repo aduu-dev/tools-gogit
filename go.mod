@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	aduu.dev/utils v0.0.0-20200523170920-7644365bffb9
+	github.com/magiconair/properties v1.8.0
 	github.com/otiai10/copy v1.1.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.3

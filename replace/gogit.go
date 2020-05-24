@@ -1,4 +1,4 @@
-package gogit
+package replace
 
 import (
 	"fmt"
