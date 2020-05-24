@@ -1,7 +1,7 @@
 on: [pull_request]
-name: Test
+name: Test pull requests
 jobs:
-  test_pull_request:
+  test:
     strategy:
       matrix:
         go-version: [1.14.x]

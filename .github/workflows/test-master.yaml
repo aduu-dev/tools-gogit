@@ -6,9 +6,9 @@ on:
     tags:
       - v0.*.*
       - v1.*.*
-name: Test
+name: Test branches
 jobs:
-  test_branch:
+  test:
     strategy:
       matrix:
         go-version: [1.14.x]

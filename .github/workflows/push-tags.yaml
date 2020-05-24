@@ -3,9 +3,9 @@ on:
     tags:
       - v0.*.*
       - v1.*.*
-name: Test
+name: Push new tag to sumdb
 jobs:
-  push_tag_to_sumdb:
+  test:
     strategy:
       matrix:
         go-version: [1.14.x]
