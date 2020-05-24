@@ -1,4 +1,11 @@
-on: [push]
+on:
+  push:
+    branches:
+      - master
+      - 'releases/**'
+    tags:
+      - v0.*.*
+      - v1.*.*
 name: Test
 jobs:
   test:
@@ -16,3 +23,10 @@ jobs:
         uses: actions/checkout@v2
       - name: Test
         run: go test ./...
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: Push change to pkg.go.dev
+        if ${{ steps.get_version.outputs.VERSION }}:
+        run: curl https://sum.golang.org/lookup/aduu.dev/tools/gogit@${{ steps.get_version.outputs.VERSION }}
+
